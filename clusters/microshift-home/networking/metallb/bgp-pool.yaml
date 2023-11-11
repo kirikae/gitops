@@ -9,6 +9,8 @@ spec:
     - bgp-pool
   peers:
     - gateway
+  aggregationLength: 32
+  localPref: 100
 ---
 apiVersion: metallb.io/v1beta1
 kind: BGPPeer
@@ -18,7 +20,7 @@ metadata:
 spec:
   peerAddress: 10.0.2.1
   peerASN: 64512
-  myASN: 64512
+  myASN: 64513
 ---
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
