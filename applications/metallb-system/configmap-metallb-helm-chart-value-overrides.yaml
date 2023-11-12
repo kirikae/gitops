@@ -192,8 +192,10 @@ data:
       securityContext:
         runAsNonRoot: true
         # nobody
-        runAsUser: 65534
-        fsGroup: 65534
+        # The following is removed for running on OpenShift
+        # see: https://metallb.universe.tf/installation/clouds/#metallb-on-openshift-ocp
+        #runAsUser: 65534
+        #fsGroup: 65534
       resources: {}
         # limits:
           # cpu: 100m
