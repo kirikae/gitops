@@ -56,7 +56,7 @@ data:
     installCRDs: true
     ## @param replicaCount Number of cert-manager replicas
     ##
-    replicaCount: 1
+    replicaCount: 2
 
     ## @section Controller deployment parameters
 
@@ -334,7 +334,7 @@ data:
     webhook:
       ## @param webhook.replicaCount Number of Webhook replicas
       ##
-      replicaCount: 1
+      replicaCount: 2
       ## Bitnami cert-manager Webhook image
       ## ref: https://hub.docker.com/r/bitnami/cert-manager-webhook/tags/
       ## @param webhook.image.registry [default: REGISTRY_NAME] Webhook image registry
@@ -611,7 +611,7 @@ data:
     cainjector:
       ## @param cainjector.replicaCount Number of CAInjector replicas
       ##
-      replicaCount: 1
+      replicaCount: 2
 
       ## Bitnami CAInjector image
       ## ref: https://hub.docker.com/r/bitnami/cainjector/tags/
