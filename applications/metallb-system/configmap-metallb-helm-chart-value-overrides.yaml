@@ -194,8 +194,8 @@ data:
         # nobody
         # The following is removed for running on OpenShift
         # see: https://metallb.universe.tf/installation/clouds/#metallb-on-openshift-ocp
-        #runAsUser: 65534
-        #fsGroup: 65534
+        runAsUser: 65534
+        fsGroup: 65534
       resources: {}
         # limits:
           # cpu: 100m
