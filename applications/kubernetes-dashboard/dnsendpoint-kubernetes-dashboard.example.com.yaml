@@ -1,0 +1,12 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: "kubernetes-dashboard.k3s.c-s.au"
+  namespace: kubernetes-dashboard
+spec:
+  endpoints:
+  - dnsName: "kubernetes-dashboard.k3s.c-s.au"
+    recordTTL: 180
+    recordType: CNAME
+    targets:
+    - "traefik-ingress.k3s.c-s.au"  
