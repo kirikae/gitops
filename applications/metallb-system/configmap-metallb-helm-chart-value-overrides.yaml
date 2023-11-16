@@ -164,7 +164,7 @@ data:
     controller:
       enabled: true
       # -- Controller log level. Must be one of: `all`, `debug`, `info`, `warn`, `error` or `none`
-      logLevel: info
+      logLevel: debug
       # command: /controller
       # webhookMode: enabled
       image:
@@ -227,7 +227,7 @@ data:
       enabled: true
       # command: /speaker
       # -- Speaker log level. Must be one of: `all`, `debug`, `info`, `warn`, `error` or `none`
-      logLevel: info
+      logLevel: debug
       tolerateMaster: true
       memberlist:
         enabled: true
