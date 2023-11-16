@@ -5,6 +5,6 @@ metadata:
   name: gateway
   namespace: metallb-system
 spec:
-  peerAddress: 10.0.2.1
-  peerASN: 64512
   myASN: 64513
+  peerASN: 64512
+  peerAddress: 10.0.2.1
