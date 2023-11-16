@@ -53,7 +53,7 @@ data:
       namespace: "cert-manager"
     ## @param installCRDs Flag to install cert-manager CRDs
     ##
-    installCRDs: false
+    installCRDs: true
     ## @param replicaCount Number of cert-manager replicas
     ##
     replicaCount: 1
