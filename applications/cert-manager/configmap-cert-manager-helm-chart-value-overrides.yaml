@@ -50,7 +50,7 @@ data:
     ## @param leaderElection.namespace Namespace which leaderElection works.
     ##
     leaderElection:
-      namespace: "kube-system"
+      namespace: "cert-manager"
     ## @param installCRDs Flag to install cert-manager CRDs
     ##
     installCRDs: false
