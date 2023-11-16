@@ -55,9 +55,9 @@ data:
 
     # enable tls on the podinfo service
     tls:
-      enabled: false
+      enabled: true
       # the name of the secret used to mount the certificate key pair
-      secretName:
+      secretName: letsencrypt-wildcard-cert-k3s.c-s.au-production
       # the path where the certificate key pair will be mounted
       certPath: /data/cert
       # the port used to host the tls endpoint on the service
@@ -108,13 +108,13 @@ data:
     securityContext: {}
 
     ingress:
-      enabled: false
+      enabled: true
       className: ""
       annotations: {}
         # kubernetes.io/ingress.class: nginx
         # kubernetes.io/tls-acme: "true"
       hosts:
-        - host: podinfo.local
+        - host: podinfo.k3s.c-s.au
           paths:
             - path: /
               pathType: ImplementationSpecific
