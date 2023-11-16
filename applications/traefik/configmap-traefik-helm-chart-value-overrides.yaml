@@ -813,9 +813,9 @@ data:
 
     autoscaling:
       # -- Create HorizontalPodAutoscaler object.
-      enabled: true
-        minReplicas: 2
-        maxReplicas: 10
+      enabled: false
+    #   minReplicas: 2
+    #   maxReplicas: 10
     #   metrics:
     #   - type: Resource
     #     resource:
