@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: openshift-console
+  namespace: openshift-console
+spec:
+  chart:
+    spec:
+      chart: openshift-console
+      version: 6.x
+      sourceRef:
+        kind: HelmRepository
+        name: openshift-console
+        namespace: flux-system
+  interval: 15m
+  timeout: 5m
+  releaseName: openshift-console
+  valuesFrom:
+  - kind: ConfigMap
+    name: openshift-console-helm-chart-value-overrides
+    valuesKey: values.yaml # This is the default, but best to be explicit for clarity
