@@ -25,6 +25,20 @@ storage:
       wipe_filesystem: false # preserve /var on reinstall (this is the default, but be explicit)
       with_mount_unit: true  # mount this filesystem in the real root
   files:
+    - path: /etc/zincati/config.d/51-rollout-wariness.toml
+      contents:
+        inline: |
+	  [identity]
+	  rollout_wariness = 0.75
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      contents:
+        inline: |
+	  [updates]
+	  strategy = "preiodic"
+	  [[updates.periodic.window]]
+	  days = [ "Fri", "Sat", "Sun"(]
+	  start_time = "23:00"
+	  length_minutes = 120
     - path: /etc/yum.repos.d/kubernetes.repo
       mode: 0644
       contents:
@@ -77,9 +91,9 @@ storage:
       overwrite: true
       mode: 0755
       contents:
-        source: "https://github.com/k3s-io/k3s/releases/download/v1.28.3%2Bk3s2/k3s"
+        source: "https://github.com/k3s-io/k3s/releases/download/v1.29.2+k3s1/k3s"
         verification:
-          hash: "sha256-9579caa9218d91614cf5779eb48749bfe5db95e11977cff70e65ee1a96056c88"
+          hash: "sha256-24c0da6cac992bf135826a648db3056f2cbdec113a154bc70a6c2518cc1b361a"
 systemd:
   units:
     - name: "rpm-ostree-install-k3s-dependencies.service"
