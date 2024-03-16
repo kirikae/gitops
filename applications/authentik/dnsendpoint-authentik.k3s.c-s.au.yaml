@@ -1,0 +1,12 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: "authentik.k3s.c-s.au"
+  namespace: authentik
+spec:
+  endpoints:
+  - dnsName: "authentik.k3s.c-s.au"
+    recordTTL: 180
+    recordType: CNAME
+    targets:
+    - "traefik-ingress.k3s.c-s.au"
