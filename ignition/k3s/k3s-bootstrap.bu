@@ -5,8 +5,8 @@ passwd:
   users:
     - name: core # Best to keep this username, if you change it, you will want to change home-dir references elsewhere in this file
       groups: ["wheel", "sudo"]
-      ssh_authorized_keys:
-        - <insert a public SSH key here>
+      ssh_authorized_keys_local:
+        - build/ssh_authorized_keys
 storage:
   disks:
     - device: /dev/disk/by-id/coreos-boot-disk
@@ -20,35 +20,32 @@ storage:
         size_mib: 0 # means "use the rest of the space on the disk"
   filesystems:
     - path: /var
+      label: var
       device: /dev/disk/by-partlabel/var
       format: xfs
       wipe_filesystem: false # preserve /var on reinstall (this is the default, but be explicit)
       with_mount_unit: true  # mount this filesystem in the real root
   files:
-    - path: /etc/zincati/config.d/51-rollout-wariness.toml
-      contents:
-        inline: |
-	  [identity]
-	  rollout_wariness = 0.75
-    - path: /etc/zincati/config.d/55-updates-strategy.toml
-      contents:
-        inline: |
-	  [updates]
-	  strategy = "preiodic"
-	  [[updates.periodic.window]]
-	  days = [ "Fri", "Sat", "Sun"(]
-	  start_time = "23:00"
-	  length_minutes = 120
     - path: /etc/yum.repos.d/kubernetes.repo
       mode: 0644
       contents:
         inline: |
           [kubernetes]
           name=Kubernetes
-          baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+          baseurl=https://pkgs.k8s.io/core:/stable:/${KUBERNETES_VERSION}/rpm/
           enabled=1
           gpgcheck=1
-          gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+          gpgkey=https://pkgs.k8s.io/core:/stable:/${KUBERNETES_VERSION}/rpm/repodata/repomd.xml.key 
+    - path: /etc/yum.repos.d/cri-o.repo
+      mode: 0644
+      contents:
+        inline: |
+          [cri-o]
+          name=CRI-O
+          baseurl=https://pkgs.k8s.io/addons:/cri-o:/stable:/${CRIO_VERSION}/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/addons:/cri-o:/stable:/${CRIO_VERSION}/rpm/repodata/repomd.xml.key
     - path: /etc/yum.repos.d/rancher-k3s-common.repo
       mode: 0644
       contents:
@@ -91,7 +88,7 @@ storage:
       overwrite: true
       mode: 0755
       contents:
-        source: "https://github.com/k3s-io/k3s/releases/download/v1.29.2+k3s1/k3s"
+        source: "https://github.com/k3s-io/k3s/releases/download/v1.32.0+k3s1/k3s"
         verification:
           hash: "sha256-24c0da6cac992bf135826a648db3056f2cbdec113a154bc70a6c2518cc1b361a"
 systemd:

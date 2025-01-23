@@ -1,0 +1,148 @@
+variant: fcos
+version: 1.5.0
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICMFxNCLNax/1/T52CNo3vAL8TGqy1hCO3GScl6FMTUv Kirikae - Ceres
+      password_hash: ${PASSWORD_HASH}
+storage:
+  disks:
+  - # The link to the block device the OS was booted from.
+    device: /dev/disk/by-id/coreos-boot-disk
+    # We do not want to wipe the partition table since this is the primary
+    # device.
+    wipe_table: false
+    partitions:
+    - number: 4
+      label: root
+      # Allocate at least 8 GiB to the rootfs. See NOTE above about this.
+      size_mib: 12288
+      resize: true
+    - size_mib: 0 # means "use the rest of the space on the disk"
+      label: var
+  filesystems:
+    - path: /var
+      device: /dev/disk/by-partlabel/var
+      format: xfs
+      wipe_filesystem: false # preserve /var on reinstall (this is the default, but be explicit)
+      with_mount_unit: true
+  directories:
+    - path: /etc/ucore-autorebase
+      mode: 0754
+  files:
+    - path: /etc/yum.repos.d/kubernetes.repo
+      mode: 0644
+      contents:
+        inline: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/${KUBERNETES_VERSION}/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/${KUBERNETES_VERSION}/rpm/repodata/repomd.xml.key 
+    - path: /etc/yum.repos.d/cri-o.repo
+      mode: 0644
+      contents:
+        inline: |
+          [cri-o]
+          name=CRI-O
+          baseurl=https://pkgs.k8s.io/addons:/cri-o:/stable:/${CRIO_VERSION}/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/addons:/cri-o:/stable:/${CRIO_VERSION}/rpm/repodata/repomd.xml.key
+    - path: /usr/local/bin
+    - path: /etc/rancher/k3s/config.yaml.d/00-server.yaml
+      mode: 0644
+      contents:
+        inline: |
+          write-kubeconfig: /var/home/core/.kube/config
+          write-kubeconfig-mode: 644
+          cluster-init: true
+          token-file: /var/home/core/.k3s-token-server
+          agent-token-file: /var/home/core/.k3s-token-agent
+          cluster-cidr: ${BU_K3S_CLUSTER_CIDR}
+          service-cider: ${BU_K3S_SERVICE_CIDR}
+          disable-network-policy: true
+          container-runtime-endpoint: /var/run/crio/crio.sock
+          flannel-backend: none
+          tls-san: ${BU_K3S_TLS_SANS}
+          disable:
+          - servicelb
+          - traefik
+    - path: /etc/sysctl.d/90-k3s.conf
+      mode: 0644
+      contents:
+        inline: |
+          fs.inotify.max_user_watches=1048576
+          fs.inotify.max_user_instances=1000000
+    - path: 
+systemd:
+  units:
+    - name: ucore-unsigned-autorebase.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=uCore autorebase to unsigned OCI and reboot
+        ConditionPathExists=!/etc/ucore-autorebase/unverified
+        ConditionPathExists=!/etc/ucore-autorebase/signed
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        StandardOutput=journal+console
+        ExecStart=/usr/bin/rpm-ostree rebase --bypass-driver ostree-unverified-registry:ghcr.io/ublue-os/ucore-minimal:stable
+        ExecStart=/usr/bin/touch /etc/ucore-autorebase/unverified
+        ExecStart=/usr/bin/systemctl disable ucore-unsigned-autorebase.service
+        ExecStart=/usr/bin/systemctl reboot
+        [Install]
+        WantedBy=multi-user.target
+    - name: ucore-signed-autorebase.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=uCore autorebase to signed OCI and reboot
+        ConditionPathExists=/etc/ucore-autorebase/unverified
+        ConditionPathExists=!/etc/ucore-autorebase/signed
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        Type=oneshot
+        StandardOutput=journal+console
+        ExecStart=/usr/bin/rpm-ostree rebase --bypass-driver ostree-image-signed:docker://ghcr.io/ublue-os/ucore-minimal:stable
+        ExecStart=/usr/bin/touch /etc/ucore-autorebase/signed
+        ExecStart=/usr/bin/systemctl disable ucore-signed-autorebase.service
+        ExecStart=/usr/bin/systemctl reboot
+        [Install]
+        WantedBy=multi-user.target
+    - name: "k3s.service"
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run K3s
+        ConditionPathExists=/etc/ucore-autorebase/signed
+        Wants=network-online.target
+        After=network-online.target
+        Wants=rpm-ostree-install-k3s-dependencies.service
+        After=rpm-ostree-install-k3s-dependencies.service
+
+        [Service]
+        Type=notify
+        EnvironmentFile=-/etc/default/%N
+        EnvironmentFile=-/etc/sysconfig/%N
+        EnvironmentFile=-/etc/systemd/system/%N.env
+        KillMode=process
+        Delegate=yes
+        LimitNOFILE=1048576
+        LimitNPROC=infinity
+        LimitCORE=infinity
+        TasksMax=infinity
+        TimeoutStartSec=0
+        Restart=always
+        RestartSec=5s
+        ExecStartPre=-/sbin/modprobe br_netfilter
+        ExecStartPre=-/sbin/modprobe overlay
+        ExecStart=/usr/local/bin/k3s server --kubelet-arg="config=/etc/rancher/k3s/kubelet.config"
+
+        [Install]
+        WantedBy=multi-user.target
